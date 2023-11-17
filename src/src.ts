@@ -4,7 +4,7 @@ export default function () {
 }
 
 let src: any[][] = [];
-export let tbl: BreakdownTable[] = [];
+export const tbl: BreakdownTable[] = [];
 
 function sources() {
     const s = SpreadsheetApp.getActiveSpreadsheet()
@@ -24,6 +24,7 @@ function tables() {
     const directives = {
         testparam: '#test-param ',
         expected: '#expected ',
+        plan: '#plan ',
         val: '#val',
         expr: '#expr',
         points: '#points',
@@ -37,18 +38,26 @@ function tables() {
                 return directives.testparam.length;
             } else if (a.startsWith(directives.expected)) {
                 return directives.expected.length;
+            } else if (a.startsWith(directives.plan)) {
+                return directives.plan.length;
             } else {
                 return 0;
             }
-        } catch(e) {
-            throw new Error(`first column require text param: ${e}`)
+        } catch (e) {
+            throw new Error(`first column requires text param: ${e}`)
         }
     }
+    const fromlen: {[len in number]: BreakdownPragma } = {
+        [directives.testparam.length]: 'test-param',
+        [directives.expected.length]: 'expected',
+        [directives.plan.length]: 'plan',
+    };
+
     function hasrow([a]: string[]) {
         try {
             return a.trim();
         } catch (e) {
-            throw new Error(`first column require text param: ${e}`)
+            throw new Error(`first column requires text param: ${e}`)
         }
     }
     type TableColumnMapping = {
@@ -69,7 +78,7 @@ function tables() {
             try {
                 const name = r[0].substring(pra);
                 cur = {
-                    pragma: pra === directives.testparam.length ? 'test-param' : 'expected',
+                    pragma: fromlen[pra],
                     table: {
                         name,
                         rows: [],
@@ -83,14 +92,14 @@ function tables() {
                     type: r.indexOf(directives.type),
                     comment: r.indexOf(directives.comment),
                 };
-            } catch(e) {
-                throw new Error(`first column require text param: ${e}`)
+            } catch (e) {
+                throw new Error(`first column requires text param: ${e}`)
             }
             return 1;
         }
         return 0;
     }
-    function row(r: string[]): TestParamBreakdownRow & ExpectedBreakdownRow {
+    function row(r: string[]): TestParamBreakdownRow & ExpectedBreakdownRow & PlanBreakdownRow {
         function v(directive?: number) {
             if (directive == null || directive === -1) {
                 return '';
@@ -109,7 +118,6 @@ function tables() {
         };
     }
 
-    tbl = [];
     for (const r of src.filter(hasrow)) {
         if (haspragma(r)) {
             tbl.push(cur!);
@@ -125,32 +133,44 @@ function tables() {
 }
 
 
-type BreakdownTable = {
+export type  BreakdownTable = {
     pragma: 'test-param';
     table: TestParamBreakdownTable;
 } | {
     pragma: 'expected';
     table: ExpectedBreakdownTable;
+} | {
+    pragma: 'plan';
+    table: PlanBreakdownTable;
 }
+export type  BreakdownPragma = 'test-param' | 'expected' | 'plan';
 
-type TestParamBreakdownTable = {
+export type  TestParamBreakdownTable = {
     name: string;
     rows: TestParamBreakdownRow[];
 }
-type TestParamBreakdownRow = {
+export type  TestParamBreakdownRow = {
     param: string;
     val: string;
 }
 
-type ExpectedBreakdownTable = {
+export type  ExpectedBreakdownTable = {
     name: string;
     rows: ExpectedBreakdownRow[];
 }
-type ExpectedBreakdownRow = {
+export type  ExpectedBreakdownRow = {
     param: string;
     expr: string;
     points: number;
     priority: number;
     type: string;
     comment: string;
+}
+
+export type  PlanBreakdownTable = {
+    name: string;
+    rows: PlanBreakdownRow[];
+}
+export type  PlanBreakdownRow = {
+    param: string;
 }
