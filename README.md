@@ -9,17 +9,24 @@
 
 ## the menu in spread sheet
 tcm displays menu 'tcms' in spread sheet.
+
 'tcms' shows down 'generate plan'.
+
 this breakdowns all test cases from 'breakdowns' sheet.
+
 sheets layouts its cases like 'template'.
 
 ## breakdown
 breakdown enumerates all combinations about its values.
+
 values contain 'test-param' and 'expected'.
+
 'test-param' expands all combinations for self.
+
 'expected' shows matrix testware should be passed.
 
 you can get 'expected' matrix for simple expression.
+
 e.g. ma: "field === 'pw'" wa: "input === 'lt' || input > 21"
 
 for example, we test manually;
