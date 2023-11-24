@@ -155,3 +155,6 @@ if this was `true`, test plan displays `(o) yes/check this behavior` for tes par
 
 test plan shows aggregated \#points, \#priority, \#type and \#comment of all expected values \#expr returns `true`.
 
+\#expr evaluates your expression 'false' if it contained error such as '2==>==3'.
+
+console will output warning errors, check it out.

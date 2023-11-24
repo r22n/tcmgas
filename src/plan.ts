@@ -1,4 +1,4 @@
-import src, { ExpectedBreakdownTable, PlanBreakdownTable, tbl, TestParamBreakdownTable } from './src';
+import src, { ExpectedBreakdownRow, ExpectedBreakdownTable, PlanBreakdownTable, tbl, TestParamBreakdownTable } from './src';
 import { parse, eval as expreval } from 'expression-eval';
 import { seq } from 'incnum';
 import { has } from './util';
@@ -67,12 +67,24 @@ export function planning() {
         r.fill(0, 0, len);
         return r;
     }
+    function eparse(xe: ExpectedBreakdownTable, t: ExpectedBreakdownRow): parse.Expression {
+        try {
+            return parse(t.expr);
+        } catch (e) {
+            console.warn(`#expr errors, expression errors while parsing, so let it 'false' instead of error. #expected=${xe.name} #expr=${t.expr} row=${JSON.stringify(t)}: msg=${e}`);
+            return parse('false');
+        }
+    }
 
     // impl
 
     // enumerates all combinations
+    const errors: Error[] = [];
     for (const p of param.plans) {
         p.rows.forEach(e => warn(e.param, p.name));
+
+
+
         const tp = p.rows.map(e => param.testparams[e.param]).filter(has);
         const ex = p.rows.map(e => param.expects[e.param]).filter(has);
         plans.push({
@@ -82,7 +94,7 @@ export function planning() {
                 plan: p,
             },
             testparams: seq(zero(tp.length), tp.map(e => e.rows.length)),
-            exprs: ex.map(e => e.rows.map(t => parse(t.expr))),
+            exprs: ex.map(e => e.rows.map(t => eparse(e, t))),
             expected: [],
         });
     }
